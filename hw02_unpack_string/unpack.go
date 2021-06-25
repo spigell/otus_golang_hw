@@ -22,17 +22,17 @@ func Unpack(str string) (string, error) {
 		return "", ErrInvalidString
 	}
 
+	var previousSymbol rune
 	for i, symbol := range str {
 		// symbol is a rune
 
 		if unicode.IsDigit(symbol) {
-			previousSymbol := str[i-1]
-			if digitRuneToInt(symbol) == 0 && unicode.IsDigit(rune(previousSymbol)) {
-				// aaa10b is invalid (digit before Zero)
+			if unicode.IsDigit(previousSymbol) {
+				// aaa10b is invalid (digit before digit, eg. a number)
 				return "", ErrInvalidString
 			}
 
-			if digitRuneToInt(symbol) == 0 && !unicode.IsDigit(rune(previousSymbol)) {
+			if digitRuneToInt(symbol) == 0 && !unicode.IsDigit(previousSymbol) {
 				// Do not write to builder if symbol is Zero (aaa0b -> aab)
 				continue
 			}
@@ -46,6 +46,7 @@ func Unpack(str string) (string, error) {
 			// Write a letter
 			builder.WriteRune(symbol)
 		}
+		previousSymbol = symbol
 	}
 
 	return builder.String(), nil

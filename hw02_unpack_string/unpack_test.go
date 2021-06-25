@@ -16,11 +16,31 @@ func TestUnpack(t *testing.T) {
 		{input: "abccd", expected: "abccd"},
 		{input: "", expected: ""},
 		{input: "aaa0b", expected: "aab"},
+		{input: "wordWith1", expected: "wordWith"},
 		// uncomment if task with asterisk completed
 		// {input: `qwe\4\5`, expected: `qwe45`},
 		// {input: `qwe\45`, expected: `qwe44444`},
 		// {input: `qwe\\5`, expected: `qwe\\\\\`},
 		// {input: `qwe\\\3`, expected: `qwe\3`},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.input, func(t *testing.T) {
+			result, err := Unpack(tc.input)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestUnpackWithUnicode(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{input: "😁😁2", expected: "😁😁😁"},
+		{input: "々々3々", expected: "々々々々々"},
 	}
 
 	for _, tc := range tests {
