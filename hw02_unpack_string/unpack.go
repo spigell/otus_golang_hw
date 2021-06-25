@@ -12,23 +12,16 @@ var ErrInvalidString = errors.New("invalid string")
 func Unpack(str string) (string, error) {
 	var builder strings.Builder
 
-	// Return empty string at once
-	if utf8.RuneCountInString(str) == 0 {
-		return "", nil
-	}
-
-	// "3abc", "45" are invalid (starts with digit)
-	if unicode.IsDigit(rune(str[0])) {
-		return "", ErrInvalidString
-	}
+	builder.WriteString("")
 
 	var previousSymbol rune
 	for i, symbol := range str {
 		// symbol is a rune
 
 		if unicode.IsDigit(symbol) {
-			if unicode.IsDigit(previousSymbol) {
-				// aaa10b is invalid (digit before digit, eg. a number)
+			if unicode.IsDigit(previousSymbol) || i == 0 {
+				// "3abc" is invalid (starts with digit)
+				// "aaa10b", "45" are invalid (digit before digit, eg. a number)
 				return "", ErrInvalidString
 			}
 
@@ -36,14 +29,14 @@ func Unpack(str string) (string, error) {
 				// Do not write to builder if symbol is Zero (aaa0b -> aab)
 				continue
 			}
-			// Repeat a previous letter
+			// Repeat a previous symbol
 			builder.WriteString(strings.Repeat(string(previousSymbol), digitRuneToInt(symbol)-1))
 		} else {
 			if utf8.RuneCountInString(str)-1 > i && rune(str[i+1]) == '0' {
 				// Do not write to builder if next symbol is Zero (aaa0b -> aab)
 				continue
 			}
-			// Write a letter
+			// Write a symbol
 			builder.WriteRune(symbol)
 		}
 		previousSymbol = symbol
