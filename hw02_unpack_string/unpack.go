@@ -26,26 +26,22 @@ func Unpack(str string) (string, error) {
 		// symbol is a rune
 
 		if unicode.IsDigit(symbol) {
-
 			previousSymbol := str[i-1]
-			if digitRuneToInt(symbol) == 0 {
-
+			if digitRuneToInt(symbol) == 0 && unicode.IsDigit(rune(previousSymbol)) {
 				// aaa10b is invalid (digit before Zero)
-				if unicode.IsDigit(rune(previousSymbol)) {
-					return "", ErrInvalidString
-				} else {
-					// Skip this symbol
-					continue
-				}
+				return "", ErrInvalidString
+			}
+
+			if digitRuneToInt(symbol) == 0 && !unicode.IsDigit(rune(previousSymbol)) {
+				// Do not write to builder if symbol is Zero (aaa0b -> aab)
+				continue
 			}
 			// Repeat a previous letter
 			builder.WriteString(strings.Repeat(string(previousSymbol), digitRuneToInt(symbol)-1))
 		} else {
-			if utf8.RuneCountInString(str)-1 > i {
-				if rune(str[i+1]) == '0' {
-					// Do not write to builder if next symbol is Zero (aaa0b -> aab)
-					continue
-				}
+			if utf8.RuneCountInString(str)-1 > i && rune(str[i+1]) == '0' {
+				// Do not write to builder if next symbol is Zero (aaa0b -> aab)
+				continue
 			}
 			// Write a letter
 			builder.WriteRune(symbol)
