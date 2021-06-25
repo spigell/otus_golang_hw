@@ -2,11 +2,59 @@ package hw02unpackstring
 
 import (
 	"errors"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
-func Unpack(_ string) (string, error) {
-	// Place your code here.
-	return "", nil
+func Unpack(str string) (string, error) {
+	var builder strings.Builder
+
+	// Return empty string at once
+	if utf8.RuneCountInString(str) == 0 {
+		return "", nil
+	}
+
+	// "3abc", "45" are invalid (starts with digit)
+	if unicode.IsDigit(rune(str[0])) {
+		return "", ErrInvalidString
+	}
+
+	for i, symbol := range str {
+		// symbol is a rune
+
+		if unicode.IsDigit(symbol) {
+
+			previousSymbol := str[i-1]
+			if digitRuneToInt(symbol) == 0 {
+
+				// aaa10b is invalid (digit before Zero)
+				if unicode.IsDigit(rune(previousSymbol)) {
+					return "", ErrInvalidString
+				} else {
+					// Skip this symbol
+					continue
+				}
+			}
+			// Repeat a previous letter
+			builder.WriteString(strings.Repeat(string(previousSymbol), digitRuneToInt(symbol)-1))
+		} else {
+			if utf8.RuneCountInString(str)-1 > i {
+				if rune(str[i+1]) == '0' {
+					// Do not write to builder if next symbol is Zero (aaa0b -> aab)
+					continue
+				}
+			}
+			// Write a letter
+			builder.WriteRune(symbol)
+		}
+	}
+
+	return builder.String(), nil
+}
+
+func digitRuneToInt(r rune) int {
+	return int(r - '0')
 }
