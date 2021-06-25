@@ -1,0 +1,4 @@
+config:
+  github:owner: spigell
+  github:token:
+    secure: AAABAPIC+eVr398iEPJYxKnwScUlKV0m9SNkSwE99w2IWHHLldmGcxO/Hswws9NWhvVNOsLnL8AgNrE1WaQLOZvu+e9GF7tS
