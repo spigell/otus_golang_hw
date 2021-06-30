@@ -4,16 +4,16 @@ import (
 	"errors"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(str string) (string, error) {
-	var builder strings.Builder
+	if str == "" {
+		return "", nil
+	}
 
-	builder.WriteString("")
-	_, lastSymbolSize := utf8.DecodeLastRuneInString(str)
+	var builder strings.Builder
 
 	var previousSymbol rune
 	for pos, symbol := range str {
@@ -28,13 +28,7 @@ func Unpack(str string) (string, error) {
 			}
 
 			// Repeat a previous symbol
-			builder.WriteString(strings.Repeat(string(previousSymbol), digitRuneToInt(symbol)))
-
-		case len(str)-lastSymbolSize == pos:
-			if !unicode.IsDigit(previousSymbol) {
-				builder.WriteRune(previousSymbol)
-			}
-			builder.WriteRune(symbol)
+			builder.WriteString(strings.Repeat(string(previousSymbol), int(symbol-'0')))
 
 		case !unicode.IsDigit(previousSymbol) && pos != 0:
 			builder.WriteRune(previousSymbol)
@@ -42,9 +36,9 @@ func Unpack(str string) (string, error) {
 		previousSymbol = symbol
 	}
 
-	return builder.String(), nil
-}
+	if !unicode.IsDigit(previousSymbol) {
+		builder.WriteString(string(previousSymbol))
+	}
 
-func digitRuneToInt(r rune) int {
-	return int(r - '0')
+	return builder.String(), nil
 }
